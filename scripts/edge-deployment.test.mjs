@@ -4,9 +4,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+import { parse } from "yaml";
 
 const script = readFileSync(new URL("../deploy.sh", import.meta.url), "utf8");
 const selector = script.slice(script.indexOf("select_tunnel_slot() {"), script.indexOf("\nselect_tunnel_slot\n"));
+
+test("main pushes deploy after checks without exposing deployment credentials to PRs", () => {
+  const pipeline = parse(readFileSync(new URL("../.woodpecker/public.yaml", import.meta.url), "utf8"));
+  assert.deepEqual(pipeline.when, [{ event: ["push", "manual"], branch: "main" }]);
+  assert.equal(pipeline.concurrency, 1);
+  const names = pipeline.steps.map(step => step.name);
+  const deploy = pipeline.steps.find(step => step.name === "deploy-edge");
+  assert.deepEqual(deploy.when, [{ event: ["push", "manual"] }]);
+  assert.deepEqual(names, ["install", "build", "test", "deploy-edge"]);
+  assert.deepEqual(deploy.environment.EDGE_SSH_KEY, { from_secret: "edge_ssh_key" });
+  for (const step of pipeline.steps.slice(0, -1)) assert.equal(step.environment?.EDGE_SSH_KEY, undefined);
+});
 
 function select(port, caddy = "") {
   const directory = mkdtempSync(join(tmpdir(), "outray-slot-test-"));

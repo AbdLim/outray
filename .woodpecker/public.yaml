@@ -16,11 +16,12 @@ steps:
     commands:
       - npm test
   # Publishing an edge image is separate from promoting the hosted edge.
-  # Manual production promotion never deploys private services or migrations.
+  # Main pushes promote only after build/test pass; manual reruns remain available.
+  # Edge promotion never deploys private services or database migrations.
   - name: deploy-edge
     image: node:22-bookworm
     when:
-      - event: manual
+      - event: [push, manual]
     environment:
       EDGE_SSH_KEY:
         from_secret: edge_ssh_key
