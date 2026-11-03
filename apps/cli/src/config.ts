@@ -22,6 +22,9 @@ export function canonicalConsoleOrigin(value: string): string {
     throw new Error("OUTRAY_WEB_URL must be an HTTPS origin (or loopback HTTP), without credentials, a path, query or fragment");
   }
   url.hostname = hostname;
+  // Fetch drops Authorization on cross-origin redirects. Resolve our legacy
+  // hosted origin before any CLI token is sent; custom origins stay isolated.
+  if (url.origin === "https://outray.dev") return "https://outray.co";
   return url.origin;
 }
 
