@@ -32,6 +32,15 @@ test("custom console auth scope is a deterministic canonical-origin hash", () =>
   assert.equal(path.basename(filename), filename);
 });
 
+test("legacy hosted auth resolves before bearer requests without remapping custom origins", () => {
+  for (const origin of ["https://outray.dev", "https://OUTRAY.DEV:443/", "https://outray.dev."]) {
+    assert.equal(canonicalConsoleOrigin(origin), "https://outray.co");
+  }
+  for (const origin of ["https://outray.co", "https://outray.dev:8443", "https://outray.dev.example.test", "https://console.example.test"]) {
+    assert.equal(canonicalConsoleOrigin(origin), origin);
+  }
+});
+
 test("hosted and multiple self-hosted tokens never share files or logout state", (t) => {
   const directory = configDirectory(t);
   const hosted = new ConfigManager(false, "https://outray.dev", directory);

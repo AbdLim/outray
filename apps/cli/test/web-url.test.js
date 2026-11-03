@@ -79,7 +79,7 @@ test("OUTRAY_WEB_URL overrides the production and development defaults", () => {
     override,
   );
   assert.equal(webUrl({ OUTRAY_WEB_URL: override }, ["--dev"]), override);
-  assert.equal(webUrl({ OUTRAY_WEB_URL: "https://outray.dev" }), "https://outray.dev");
+  assert.equal(webUrl({ OUTRAY_WEB_URL: "https://outray.dev" }), "https://outray.co");
 });
 
 test("an empty override falls back to the environment's console URL", () => {
